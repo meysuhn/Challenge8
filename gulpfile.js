@@ -1,6 +1,7 @@
 "use strict";
 /* jshint node: true */
 
+
 var   gulp = require('gulp'),
     concat = require('gulp-concat'),
     uglify = require('gulp-uglify'),
@@ -8,7 +9,6 @@ var   gulp = require('gulp'),
 sourceMaps = require('gulp-sourcemaps'),
     rename = require('gulp-rename'),
        del = require('del'),
-   connect = require('gulp-connect'),
   imagemin = require('gulp-imagemin'),
   browserSync = require('browser-sync').create();
 
@@ -19,14 +19,8 @@ gulp.task("scripts", function() {
   ])
   .pipe(sourceMaps.init())
   .pipe(concat('all.min.js'))
-  .pipe(sourceMaps.write('./')) // the path to where I want the source file to live (in this case, the home directory)
-  .pipe(gulp.dest('dist/scripts'));
-});
-
-// Because scripts is a dependency of minifyScripts below when the script command is run minifyScripts will run too.
-gulp.task("minifyScripts", ['scripts'], function() {
-  return gulp.src('dist/scripts/all.min.js')
   .pipe(uglify())
+  .pipe(sourceMaps.write('./')) // the path to where I want the source file to live (in this case, the home directory)
   .pipe(gulp.dest('dist/scripts'));
 });
 
@@ -54,25 +48,13 @@ gulp.task("clean", function() {
 });
 
 
-// // no other tasks depend on the watch method therefore no return statement is necessary.
-// gulp.task("watchFiles", function() {
-//   gulp.watch('sass/**/*.scss', ['styles']); // recompile css if a file change is detected
-//   //gulp.watch('js/**/*.js', ['minifyScripts']); // recompile js if a file change is detected
-// });
-// // NOTE browser cache problem. Not automatically showing new styles in browser. What to do? Ask community tomorrow.
-// // NOTE watchFiles isn't working. Not automatic recompile.
-
-
-gulp.task("build", ["clean"], function() {
-  gulp.start(['minifyScripts', 'styles', 'images']);
+gulp.task("build", ['clean', 'scripts', 'styles', 'images'], function() {
+  //gulp.start(['minifyScripts', 'styles', 'images']);
   return gulp.src(['index.html', 'images/**', 'icons/**'], {base: './'})
     .pipe(gulp.dest('dist'));
 });
 // clean is first completed, then the scripts in the array are ran in the callback
 // since 'scripts' is a dependency of minifyScripts it doesn't need to be stated in the build task. It will run as a result of minifyScriptsbeing run.
-
-
-
 
 
 gulp.task("default", ["serve"], function() {
@@ -83,20 +65,14 @@ gulp.task("default", ["serve"], function() {
 
 // Static Server + watching scss/html files
 gulp.task('serve', ['build'], function() {
-// a server will be created on port 3000 when serve is ran.
+// a server will be created on a port (3000 if it's available) when serve is ran.
     browserSync.init({
-        server: "dist"
+        server: "dist" // dist files are those to be served
     });
 
-    gulp.watch("sass/*", ['build']);
+    gulp.watch("sass/*", ['build']); // run build if any changes to sass files
     gulp.watch("*.html").on('change', browserSync.reload);
 });
-
-
-
-  // Extra Credit
-  // As a developer, when I run the default gulp command, it should continuously watch for changes to any .scss file in my project. When there is a change to one of the .scss files, the gulp styles command is run and the files are compiled, concatenated, and minified to the dist folder. My project should then reload in the browser, displaying the changes.
-
 
 
 
@@ -121,6 +97,18 @@ gulp.task('serve', ['build'], function() {
 
 // DONE As a developer, I should be able to run the gulp command at the command line to run the build task and serve my project using a local web server.
 
+// DONE Extra Credit
+// As a developer, when I run the default gulp command, it should continuously watch for changes to any .scss file in my project. When there is a change to one of the .scss files, the gulp styles command is run and the files are compiled, concatenated, and minified to the dist folder. My project should then reload in the browser, displaying the changes.
 
 //-LESSONS LEARNT--------------------------
 // gulpfile.js should always be in the root of the project
+// gulp.src tells the Gulp task what files to use for the task
+
+// Taken out as not required with browser-sync
+// no other tasks depend on the watch method therefore no return statement is necessary.
+// gulp.task("watchFiles", function() {
+//   gulp.watch('sass/**/*.scss', ['styles']); // recompile css if a file change is detected
+//   //gulp.watch('js/**/*.js', ['minifyScripts']); // recompile js if a file change is detected
+// });
+// // NOTE browser cache problem. Not automatically showing new styles in browser. What to do? Ask community tomorrow.
+// // NOTE watchFiles isn't working. Not automatic recompile.
