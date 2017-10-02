@@ -1,7 +1,6 @@
 "use strict";
 /* jshint node: true */
 
-
 var   gulp = require('gulp'),
     concat = require('gulp-concat'),
     uglify = require('gulp-uglify'),
@@ -14,7 +13,7 @@ sourceMaps = require('gulp-sourcemaps'),
 
 gulp.task("scripts", function() {
   return gulp.src([
-    'js/global.js', // NOTE is global needed here as it's covered by the line below?
+    'js/global.js',
     'js/**/*.js'  // This is a globbing pattern, (every .js file in the js folder).
   ])
   .pipe(sourceMaps.init())
@@ -49,18 +48,14 @@ gulp.task("clean", function() {
 
 
 gulp.task("build", ['clean', 'scripts', 'styles', 'images'], function() {
-  //gulp.start(['minifyScripts', 'styles', 'images']);
   return gulp.src(['index.html', 'images/**', 'icons/**'], {base: './'})
     .pipe(gulp.dest('dist'));
 });
-// clean is first completed, then the scripts in the array are ran in the callback
-// since 'scripts' is a dependency of minifyScripts it doesn't need to be stated in the build task. It will run as a result of minifyScriptsbeing run.
 
 
 gulp.task("default", ["serve"], function() {
 });
-// running just the 'gulp' commaned will clear all previous gulp generated files & folders and then build up again from scratch using 'build'
-  // clean is first completed, then build is ran in the callback
+// running the 'gulp' command will clear all previous gulp generated files & folders and then build up again from scratch using 'serve', which itself calls the build task.
 
 
 // Static Server + watching scss/html files
