@@ -9,6 +9,7 @@ sourceMaps = require('gulp-sourcemaps'),
     rename = require('gulp-rename'),
        del = require('del'),
   imagemin = require('gulp-imagemin'),
+  useref = require('gulp-useref'),
   browserSync = require('browser-sync').create();
 
 gulp.task("scripts", function() {
@@ -38,8 +39,14 @@ gulp.task("styles", function() {
 gulp.task('images', () => {
  return gulp.src('images/*') // glob everything in the images folder
         .pipe(imagemin())
-        .pipe(gulp.dest('dist/content'))
+        .pipe(gulp.dest('dist/content'));
 });
+
+// gulp.task('index', function () {
+//     return gulp.src('index.html')
+//         .pipe(useref())
+//         .pipe(gulp.dest('dist'));
+// });
 
 // Cleans away all files/folders created by Gulp.
 gulp.task("clean", function() {
@@ -47,8 +54,9 @@ gulp.task("clean", function() {
 });
 
 
-gulp.task("build", ['clean', 'scripts', 'styles', 'images'], function() {
+gulp.task("build", ['clean', 'scripts', 'styles', 'images'], function() { // ['clean', 'scripts', 'styles', 'images'] is the array of tasks to complete before running build's own tasks below
   return gulp.src(['index.html', 'images/**', 'icons/**'], {base: './'})
+    //.pipe(useref('index.html')) // NOTE delete. pass index.html through userref
     .pipe(gulp.dest('dist'));
 });
 
@@ -58,15 +66,19 @@ gulp.task("default", ["serve"], function() {
 // running the 'gulp' command will clear all previous gulp generated files & folders and then build up again from scratch using 'serve', which itself calls the build task.
 
 
+
 // Static Server + watching scss/html files
 gulp.task('serve', ['build'], function() {
 // a server will be created on a port (3000 if it's available) when serve is ran.
-    browserSync.init({
+gulp.src('index.html')
+    .pipe(useref())
+    .pipe(gulp.dest('dist'));
+     browserSync.init({
         server: "dist" // dist files are those to be served
     });
-
-    gulp.watch("sass/*", ['build']); // run build if any changes to sass files
+    gulp.watch("sass/**/*", ['build']); // run build if any changes to sass files
     gulp.watch("*.html").on('change', browserSync.reload);
+
 });
 
 
@@ -105,5 +117,5 @@ gulp.task('serve', ['build'], function() {
 //   gulp.watch('sass/**/*.scss', ['styles']); // recompile css if a file change is detected
 //   //gulp.watch('js/**/*.js', ['minifyScripts']); // recompile js if a file change is detected
 // });
-// // NOTE browser cache problem. Not automatically showing new styles in browser. What to do? Ask community tomorrow.
-// // NOTE watchFiles isn't working. Not automatic recompile.
+// // NOTE browser cache problem. Not automatically showing new styles in browser.
+// // NOTE watchFiles isn't working. No automatic recompile.
