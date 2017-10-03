@@ -9,7 +9,7 @@ sourceMaps = require('gulp-sourcemaps'),
     rename = require('gulp-rename'),
        del = require('del'),
   imagemin = require('gulp-imagemin'),
-  useref = require('gulp-useref'),
+  htmlreplace = require('gulp-html-replace'),
   browserSync = require('browser-sync').create();
 
 gulp.task("scripts", function() {
@@ -35,6 +35,7 @@ gulp.task("styles", function() {
  .pipe(browserSync.stream()); // Because Browsersync only cares about your CSS when it's finished compiling - make sure you call .stream() after gulp.dest
 });
 
+
 //The images task written in ES6 syntax.
 gulp.task('images', () => {
  return gulp.src('images/*') // glob everything in the images folder
@@ -50,32 +51,29 @@ gulp.task("clean", function() {
 
 
 gulp.task("build", ['clean', 'scripts', 'styles', 'images'], function() { // ['clean', 'scripts', 'styles', 'images'] is the array of tasks to complete before running build's own tasks below
-  return gulp.src(['index.html', 'images/**', 'icons/**'], {base: './'})
+  return gulp.src(['images/**', 'icons/**'], {base: './'})
     .pipe(gulp.dest('dist'));
 });
 
 
-gulp.task("browserSync", function(){
-  browserSync.init({
-     server: "dist" // dist files are those to be served
-  });
-  gulp.watch("sass/**/*", ['build']); // run build if any changes to sass files
-  gulp.watch("*.html").on('change', browserSync.reload);
+gulp.task("default", ["serve"], function() {
+  gulp.src('index.html')
+    .pipe(htmlreplace({
+        'css': 'styles/all.min.css',
+        'js': 'scripts/all.min.js'
+    }))
+    .pipe(gulp.dest('dist'));
 });
-
-
-gulp.task("default", ["index"], function() {
-  gulp.start(['browserSync']);
-  // a server will be created on a port (3000 if it's available) when Gulp is ran.
-});
-// running the 'gulp' command will clear all previous gulp generated files & folders and then build up again from scratch using 'serve', which itself calls the build task.
 
 
 // Static Server + watching scss/html files
-gulp.task('index', ['build'], function() {
-  return gulp.src('index.html')
-    .pipe(useref())
-    .pipe(gulp.dest('dist'));
+gulp.task('serve', ['build'], function() {
+// a server will be created on a port (3000 if it's available) when serve is ran.
+     browserSync.init({
+        server: "dist" // dist files are those to be served
+    });
+    gulp.watch("sass/**/*", ['build']); // run build if any changes to sass files
+    gulp.watch("*.html").on('change', browserSync.reload);
 });
 
 
