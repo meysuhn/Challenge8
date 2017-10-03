@@ -42,11 +42,6 @@ gulp.task('images', () => {
         .pipe(gulp.dest('dist/content'));
 });
 
-// gulp.task('index', function () {
-//     return gulp.src('index.html')
-//         .pipe(useref())
-//         .pipe(gulp.dest('dist'));
-// });
 
 // Cleans away all files/folders created by Gulp.
 gulp.task("clean", function() {
@@ -56,29 +51,31 @@ gulp.task("clean", function() {
 
 gulp.task("build", ['clean', 'scripts', 'styles', 'images'], function() { // ['clean', 'scripts', 'styles', 'images'] is the array of tasks to complete before running build's own tasks below
   return gulp.src(['index.html', 'images/**', 'icons/**'], {base: './'})
-    //.pipe(useref('index.html')) // NOTE delete. pass index.html through userref
     .pipe(gulp.dest('dist'));
 });
 
 
-gulp.task("default", ["serve"], function() {
+gulp.task("browserSync", function(){
+  browserSync.init({
+     server: "dist" // dist files are those to be served
+  });
+  gulp.watch("sass/**/*", ['build']); // run build if any changes to sass files
+  gulp.watch("*.html").on('change', browserSync.reload);
+});
+
+
+gulp.task("default", ["index"], function() {
+  gulp.start(['browserSync']);
+  // a server will be created on a port (3000 if it's available) when Gulp is ran.
 });
 // running the 'gulp' command will clear all previous gulp generated files & folders and then build up again from scratch using 'serve', which itself calls the build task.
 
 
-
 // Static Server + watching scss/html files
-gulp.task('serve', ['build'], function() {
-// a server will be created on a port (3000 if it's available) when serve is ran.
-gulp.src('index.html')
+gulp.task('index', ['build'], function() {
+  return gulp.src('index.html')
     .pipe(useref())
     .pipe(gulp.dest('dist'));
-     browserSync.init({
-        server: "dist" // dist files are those to be served
-    });
-    gulp.watch("sass/**/*", ['build']); // run build if any changes to sass files
-    gulp.watch("*.html").on('change', browserSync.reload);
-
 });
 
 
